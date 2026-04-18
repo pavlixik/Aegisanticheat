@@ -3,229 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aegis Anticheat | Next-Gen FiveM Protection</title>
+    <title>AEGIS | Advanced Defense System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020203; color: white; scroll-behavior: smooth; overflow-x: hidden; }
-        .grid-bg { background-image: radial-gradient(#1a1a1a 1px, transparent 1px); background-size: 30px 30px; }
-        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .blue-glow { box-shadow: 0 0 50px -10px rgba(59, 130, 246, 0.4); }
-        .hero-text { background: linear-gradient(180deg, #fff 0%, #777 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020203; color: white; overflow-x: hidden; }
+        .grid-bg { background-image: radial-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px); background-size: 40px 40px; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .blue-glow { box-shadow: 0 0 80px -20px rgba(59, 130, 246, 0.5); }
         
-        /* Animace pro Dashboard */
-        .view-transition { transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-        .hidden-view { display: none; opacity: 0; transform: scale(0.9) translateY(30px); }
-        
-        /* Animace pro Karty */
-        .card-hover { transition: all 0.4s ease; }
-        .card-hover:hover { transform: translateY(-10px) scale(1.02); border-color: #3b82f6; box-shadow: 0 20px 40px -20px rgba(59, 130, 246, 0.5); }
+        /* Smooth Sections Transition */
+        .page-section { display: none; opacity: 0; transform: translateY(30px); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .page-section.active { display: block; opacity: 1; transform: translateY(0); }
 
-        /* Sidebar Košíku */
-        #cart-sidebar { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* Animations */
+        @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
+        .active-pulse { animation: pulse-blue 2s infinite; }
+        
+        .nav-link { position: relative; cursor: pointer; transition: color 0.3s; }
+        .nav-link::after { content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 0; background: #3b82f6; transition: width 0.3s; }
+        .nav-link:hover::after { width: 100%; }
     </style>
 </head>
-<body class="grid-bg">
+<body class="grid-bg min-h-screen">
 
-    <div id="cart-sidebar" class="fixed right-0 top-0 h-full w-80 glass z-[100] translate-x-full p-6 flex flex-col border-l border-white/10 shadow-2xl">
-        <div class="flex justify-between items-center mb-10">
-            <h2 class="text-xl font-extrabold italic text-blue-500">AEGIS CART</h2>
-            <button onclick="toggleCart()" class="text-gray-500 hover:text-white text-2xl">✕</button>
+    <div id="cart-sidebar" class="fixed right-0 top-0 h-full w-96 glass z-[200] translate-x-full transition-transform duration-500 p-8 flex flex-col border-l border-white/10 shadow-2xl">
+        <h2 class="text-2xl font-black italic mb-8 text-blue-500 tracking-tighter uppercase">Operations Cart</h2>
+        <div id="cart-items" class="flex-1 space-y-4 overflow-y-auto pr-2 text-sm text-gray-500 italic">No assets selected.</div>
+        <div class="pt-6 border-t border-white/10 mt-6">
+            <div class="flex justify-between text-xl font-bold mb-6"><span>Subtotal:</span><span id="cart-total" class="text-blue-500">$0</span></div>
+            <button class="w-full bg-blue-600 py-4 rounded-2xl font-black hover:bg-blue-700 transition blue-glow uppercase tracking-widest">Authorize Payment</button>
         </div>
-        <div id="cart-items" class="flex-1 space-y-4 overflow-y-auto">
-            <p class="text-gray-600 text-center italic mt-20">Your cart is empty.</p>
-        </div>
-        <div class="border-t border-white/10 pt-6 mt-4">
-            <div class="flex justify-between text-xl font-bold mb-6">
-                <span>Total:</span>
-                <span id="cart-total" class="text-blue-500">$0</span>
-            </div>
-            <button onclick="alert('Redirecting to secure payment...')" class="w-full bg-blue-600 py-4 rounded-2xl font-bold hover:bg-blue-700 transition blue-glow">Checkout Now</button>
-        </div>
+        <button onclick="toggleCart()" class="mt-4 text-xs text-gray-600 hover:text-white uppercase tracking-widest">Close Terminal</button>
     </div>
 
-    <button onclick="toggleCart()" class="fixed bottom-8 right-8 z-[90] glass p-5 rounded-3xl blue-glow border border-blue-500/30 hover:scale-110 transition active:scale-95">
-        <span id="cart-count" class="absolute -top-2 -right-2 bg-blue-600 text-white text-[10px] px-2 py-1 rounded-full font-bold">0</span>
-        <span class="text-2xl">🛒</span>
-    </button>
-
-    <div id="main-content" class="view-transition">
-        <nav class="fixed top-0 w-full z-50 glass border-b border-white/5 px-8 py-5">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black shadow-lg shadow-blue-500/30">A</div>
-                    <span class="text-2xl font-black tracking-tighter">AEGIS</span>
-                </div>
-                <div class="hidden md:flex gap-10 text-sm font-bold text-gray-400 uppercase tracking-widest">
-                    <a href="#about" class="hover:text-white transition">About</a>
-                    <a href="#pricing" class="hover:text-white transition">Pricing</a>
-                    <a href="https://discord.gg/tND5RmUQzG" target="_blank" class="text-blue-500 hover:text-blue-400">Discord</a>
-                </div>
-                <button onclick="document.getElementById('client-panel').scrollIntoView()" class="bg-white text-black px-8 py-3 rounded-full text-xs font-black hover:bg-blue-600 hover:text-white transition shadow-xl">CLIENT LOGIN</button>
+    <nav class="fixed top-0 w-full z-[100] glass border-b border-white/5 px-10 py-6">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="showSection('home')">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black active-pulse">A</div>
+                <span class="text-2xl font-black tracking-tighter italic">AEGIS</span>
             </div>
-        </nav>
-
-        <header class="pt-56 pb-32 text-center px-6">
-            <h1 class="text-7xl md:text-9xl font-black hero-text mb-8 tracking-tighter italic">PROTECT EVERYTHING.</h1>
-            <p class="text-gray-500 max-w-2xl mx-auto text-xl mb-12 font-medium">Next-gen FiveM anticheat with zero impact on performance.</p>
-            <a href="#pricing" class="inline-block bg-blue-600 px-12 py-6 rounded-3xl font-black text-lg blue-glow hover:scale-105 transition active:scale-95 uppercase tracking-widest">Explore Pricing</a>
-        </header>
-
-        <section id="pricing" class="max-w-7xl mx-auto px-6 py-32">
-            <div class="grid md:grid-cols-3 gap-10 items-end">
-                <div class="glass p-12 rounded-[40px] card-hover text-center">
-                    <h3 class="text-gray-500 font-bold uppercase mb-4 tracking-widest text-sm">Starter</h3>
-                    <div class="text-6xl font-black mb-8">$15<span class="text-lg text-gray-700">/mo</span></div>
-                    <button onclick="addToCart('Monthly Shield', 15)" class="w-full py-5 rounded-2xl bg-white/5 font-bold hover:bg-blue-600 transition uppercase tracking-widest">Add to Cart</button>
-                </div>
-                <div class="glass p-12 rounded-[40px] border-2 border-blue-600 blue-glow relative scale-110 text-center">
-                    <div class="absolute -top-5 left-1/2 -translate-x-1/2 bg-blue-600 px-6 py-2 rounded-full text-[10px] font-black tracking-[0.2em]">MOST POPULAR</div>
-                    <h3 class="text-blue-400 font-bold uppercase mb-4 tracking-widest text-sm">Professional</h3>
-                    <div class="text-6xl font-black mb-8">$65<span class="text-lg text-gray-700">/7mo</span></div>
-                    <button onclick="addToCart('Semi-Annual Shield', 65)" class="w-full py-5 rounded-2xl bg-blue-600 font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/20 uppercase tracking-widest">Add to Cart</button>
-                </div>
-                <div class="glass p-12 rounded-[40px] card-hover text-center">
-                    <h3 class="text-gray-500 font-bold uppercase mb-4 tracking-widest text-sm">Unlimited</h3>
-                    <div class="text-6xl font-black mb-8">$99<span class="text-lg text-gray-700">/life</span></div>
-                    <button onclick="addToCart('Lifetime Shield', 99)" class="w-full py-5 rounded-2xl bg-white/5 font-bold hover:bg-blue-600 transition uppercase tracking-widest">Add to Cart</button>
-                </div>
+            <div class="hidden md:flex gap-10 text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">
+                <span onclick="showSection('home')" class="nav-link">Home</span>
+                <span onclick="showSection('about')" class="nav-link">About</span>
+                <span onclick="showSection('reviews')" class="nav-link">Reviews</span>
+                <span onclick="showSection('pricing')" class="nav-link">Pricing</span>
             </div>
-        </section>
-
-        <section id="client-panel" class="max-w-4xl mx-auto px-6 py-40">
-            <div class="glass p-20 rounded-[50px] text-center blue-glow border border-blue-500/20">
-                <h2 class="text-4xl font-black mb-10 italic uppercase tracking-tighter">Enter Command Center</h2>
-                <div class="max-w-md mx-auto space-y-6">
-                    <input type="text" id="license-key" placeholder="AEGIS-XXXX-XXXX" class="w-full bg-black/40 border border-white/10 rounded-2xl px-8 py-6 outline-none focus:border-blue-500 transition text-center font-mono text-xl tracking-[0.3em] text-blue-400">
-                    <button onclick="verifyKey()" class="w-full bg-white text-black py-6 rounded-2xl font-black hover:bg-blue-600 hover:text-white transition-all text-lg tracking-widest flex items-center justify-center gap-4">
-                        <span id="btn-text">INITIALIZE SYSTEM</span>
-                        <div id="loader" class="hidden w-6 h-6 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
-                    </button>
-                    <p class="text-[10px] text-gray-600 font-bold tracking-widest uppercase">Use key: <span class="text-blue-500">AEGIS-TEST-2024</span></p>
+            <div class="flex gap-6 items-center">
+                <div onclick="toggleCart()" class="cursor-pointer relative">
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-blue-600 text-[8px] px-1.5 py-0.5 rounded-full font-bold">0</span>
+                    🛒
                 </div>
+                <button onclick="showSection('login')" class="bg-white text-black px-8 py-2.5 rounded-full text-[10px] font-black hover:bg-blue-600 hover:text-white transition tracking-widest">DASHBOARD</button>
             </div>
-        </section>
-    </div>
+        </div>
+    </nav>
 
-    <div id="dashboard-view" class="hidden-view fixed inset-0 z-[200] bg-[#020203] grid-bg p-12 overflow-y-auto">
+    <section id="home" class="page-section active pt-56 px-6 text-center">
+        <div class="max-w-4xl mx-auto" data-aos="fade-up">
+            <h1 class="text-8xl md:text-[120px] font-black leading-[0.8] mb-10 tracking-tighter italic opacity-90">THE APEX <br><span class="text-blue-600">SHIELD.</span></h1>
+            <p class="text-gray-500 text-xl max-w-xl mx-auto mb-12 font-light">Digital dominance for FiveM. Stop cheaters before they even connect.</p>
+            <button onclick="showSection('pricing')" class="bg-blue-600 px-12 py-6 rounded-3xl font-black text-lg blue-glow hover:scale-105 transition uppercase tracking-widest">Get Aegis now</button>
+        </div>
+    </section>
+
+    <section id="about" class="page-section pt-40 px-6 max-w-5xl mx-auto">
+        <h2 class="text-5xl font-black italic mb-10">CORE SYSTEMS.</h2>
+        <div class="grid md:grid-cols-2 gap-10">
+            <div class="glass p-10 rounded-[40px]">
+                <h3 class="text-blue-500 font-bold mb-4 uppercase text-xs tracking-widest underline">Neural Detection</h3>
+                <p class="text-gray-400 leading-relaxed">Our proprietary AI scans memory patterns and execution strings in real-time. Cheats like Eulen, RedEngine or Skript are neutralized instantly.</p>
+            </div>
+            <div class="glass p-10 rounded-[40px]">
+                <h3 class="text-blue-500 font-bold mb-4 uppercase text-xs tracking-widest underline">Global Intelligence</h3>
+                <p class="text-gray-400 leading-relaxed">When a cheater gets banned on one Aegis server, they are flagged across our entire network. Safety in numbers.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="reviews" class="page-section pt-40 px-6 max-w-7xl mx-auto">
+        <h2 class="text-5xl font-black italic mb-16 text-center uppercase">Verified Intel.</h2>
+        <div class="grid md:grid-cols-3 gap-8 italic text-gray-400">
+            <div class="glass p-8 rounded-3xl border-l-4 border-blue-600">"Five months without a single modder. Aegis is the industry standard."<br><span class="text-white font-bold not-italic block mt-4">- Dev. SkyNet</span></div>
+            <div class="glass p-8 rounded-3xl border-l-4 border-blue-600">"The unban system and dashboard are so easy to use. 10/10."<br><span class="text-white font-bold not-italic block mt-4">- Owner of Project-X</span></div>
+            <div class="glass p-8 rounded-3xl border-l-4 border-blue-600">"Best money spent on our community. Invisible protection."<br><span class="text-white font-bold not-italic block mt-4">- Admin Jarda</span></div>
+        </div>
+    </section>
+
+    <section id="pricing" class="page-section pt-40 px-6 max-w-7xl mx-auto text-center pb-20">
+        <div class="grid md:grid-cols-3 gap-10 items-end">
+            <div class="glass p-10 rounded-[40px] hover:scale-105 transition duration-500">
+                <h3 class="text-gray-500 font-bold uppercase mb-6 tracking-widest text-xs">Standard Protection</h3>
+                <div class="text-6xl font-black mb-10 tracking-tighter">$15<span class="text-sm">/mo</span></div>
+                <button onclick="addToCart('Standard Monthly', 15)" class="w-full py-4 rounded-2xl bg-white/5 font-black hover:bg-blue-600 transition tracking-widest">ADD TO TERMINAL</button>
+            </div>
+            <div class="glass p-12 rounded-[50px] border-2 border-blue-600 blue-glow relative scale-110">
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 px-6 py-1 rounded-full text-[10px] font-black uppercase">Tactical Choice</div>
+                <h3 class="text-blue-400 font-bold uppercase mb-6 tracking-widest text-xs">Aegis 7-Months</h3>
+                <div class="text-7xl font-black mb-10 tracking-tighter">$65</div>
+                <button onclick="addToCart('7-Month Shield', 65)" class="w-full py-5 rounded-2xl bg-blue-600 font-black hover:bg-blue-700 transition uppercase tracking-widest">ADD TO TERMINAL</button>
+            </div>
+            <div class="glass p-10 rounded-[40px] hover:scale-105 transition duration-500">
+                <h3 class="text-gray-500 font-bold uppercase mb-6 tracking-widest text-xs">Absolute Lifetime</h3>
+                <div class="text-6xl font-black mb-10 tracking-tighter">$99</div>
+                <button onclick="addToCart('Lifetime Aegis', 99)" class="w-full py-4 rounded-2xl bg-white/5 font-black hover:bg-blue-600 transition tracking-widest uppercase">ADD TO TERMINAL</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="login" class="page-section pt-56 px-6">
+        <div class="max-w-xl mx-auto glass p-16 rounded-[50px] text-center blue-glow">
+            <h2 class="text-3xl font-black mb-10 italic uppercase tracking-tighter italic">Enter Credential</h2>
+            <input type="text" id="license-key" placeholder="AEGIS-XXXX-XXXX" class="w-full bg-black/40 border border-white/10 rounded-2xl px-8 py-5 outline-none focus:border-blue-500 transition text-center font-mono text-xl tracking-widest text-blue-400 mb-6">
+            <button onclick="verifyAndLogin()" class="w-full bg-white text-black py-5 rounded-2xl font-black hover:bg-blue-600 hover:text-white transition tracking-widest flex items-center justify-center gap-4">
+                <span id="login-text">LOGIN TO SYSTEM</span>
+                <div id="login-loader" class="hidden w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+            </button>
+            <p class="mt-4 text-[10px] text-gray-700 font-bold uppercase">Test Auth: AEGIS-2024</p>
+        </div>
+    </section>
+
+    <div id="dashboard" class="fixed inset-0 z-[300] bg-[#020203] grid-bg p-10 overflow-y-auto hidden">
         <div class="max-w-7xl mx-auto">
-            <div class="flex justify-between items-end mb-16 border-b border-white/5 pb-10">
-                <div>
-                    <h1 class="text-5xl font-black tracking-tighter text-blue-500 italic mb-2">AEGIS CONTROL PANEL</h1>
-                    <p class="text-gray-500 font-bold uppercase tracking-[0.2em] text-xs">System Status: <span class="text-green-500">Online & Secured</span></p>
-                </div>
-                <button onclick="location.reload()" class="glass px-10 py-4 rounded-2xl font-black hover:bg-red-600 transition uppercase text-xs tracking-widest">Terminate Session</button>
-            </div>
-
-            <div class="grid md:grid-cols-4 gap-8">
-                <div class="glass p-10 rounded-[35px] border-b-4 border-blue-600">
-                    <p class="text-gray-600 font-bold text-[10px] uppercase mb-4">Total Detections</p>
-                    <div class="text-5xl font-black">24,812</div>
-                </div>
-                <div class="glass p-10 rounded-[35px] border-b-4 border-purple-600">
-                    <p class="text-gray-600 font-bold text-[10px] uppercase mb-4">Active Servers</p>
-                    <div class="text-5xl font-black">152</div>
-                </div>
-                <div class="glass p-10 rounded-[35px] border-b-4 border-green-600">
-                    <p class="text-gray-600 font-bold text-[10px] uppercase mb-4">Server Load</p>
-                    <div class="text-5xl font-black">0.02<span class="text-xl">ms</span></div>
-                </div>
-                <div class="glass p-10 rounded-[35px] border-b-4 border-orange-600">
-                    <p class="text-gray-600 font-bold text-[10px] uppercase mb-4">Global Bans</p>
-                    <div class="text-5xl font-black">8.4k</div>
+            <div class="flex justify-between items-center mb-16 border-b border-white/5 pb-8">
+                <h1 class="text-4xl font-black italic tracking-tighter text-blue-500">COMMAND CENTER v1.0</h1>
+                <div class="flex gap-4">
+                    <button class="glass px-6 py-2 rounded-xl text-[10px] font-black hover:bg-blue-600 transition">DOWNLOAD CLIENT</button>
+                    <button onclick="location.reload()" class="bg-red-900/20 text-red-500 border border-red-900 px-6 py-2 rounded-xl text-[10px] font-black">LOGOUT</button>
                 </div>
             </div>
 
-            <div class="mt-12 glass p-20 rounded-[50px] border-dashed border-2 border-white/5 flex flex-col items-center justify-center">
-                <div class="w-20 h-20 bg-blue-600/10 rounded-full flex items-center justify-center mb-6 animate-pulse">
-                    <div class="w-10 h-10 bg-blue-600 rounded-full"></div>
-                </div>
-                <h3 class="text-xl font-black tracking-widest uppercase mb-4 italic">Live Data Stream</h3>
-                <p class="text-gray-600 font-mono text-sm">AUTHENTICATING ENCRYPTED WEBSOCKETS...</p>
+            <div class="grid md:grid-cols-4 gap-6 mb-12">
+                <div class="glass p-8 rounded-3xl"><p class="text-[10px] text-gray-600 uppercase font-bold mb-2 tracking-widest">Active Bans</p><div class="text-5xl font-black">4,129</div></div>
+                <div class="glass p-8 rounded-3xl"><p class="text-[10px] text-gray-600 uppercase font-bold mb-2 tracking-widest">CPU Impact</p><div class="text-5xl font-black">0.01%</div></div>
+                <div class="glass p-8 rounded-3xl"><p class="text-[10px] text-gray-600 uppercase font-bold mb-2 tracking-widest">Global Sync</p><div class="text-5xl font-black text-green-500 italic">ON</div></div>
+                <div class="glass p-8 rounded-3xl"><p class="text-[10px] text-gray-600 uppercase font-bold mb-2 tracking-widest">Security Level</p><div class="text-5xl font-black text-blue-500 italic">MAX</div></div>
             </div>
+
+            <div class="grid lg:grid-cols-2 gap-10">
+                <div class="glass p-10 rounded-[40px]">
+                    <h3 class="text-xl font-black mb-8 italic text-blue-400 uppercase tracking-widest">Live Ban Stream</h3>
+                    <div class="space-y-4 font-mono text-xs">
+                        <div class="flex justify-between p-4 glass rounded-xl border-l-4 border-red-600">
+                            <span>ID: 2481 | Executor Detected</span>
+                            <button onclick="playReplay()" class="text-blue-500 hover:underline">WATCH REPLAY</button>
+                        </div>
+                        <div class="flex justify-between p-4 glass rounded-xl border-l-4 border-red-600">
+                            <span>ID: 9912 | Noclip Movement</span>
+                            <button onclick="playReplay()" class="text-blue-500 hover:underline">WATCH REPLAY</button>
+                        </div>
+                        <div class="flex justify-between p-4 glass rounded-xl border-l-4 border-red-600">
+                            <span>ID: 1024 | TriggerEvent Injection</span>
+                            <button onclick="playReplay()" class="text-blue-500 hover:underline">WATCH REPLAY</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-10 rounded-[40px] flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xl font-black mb-8 italic text-yellow-500 uppercase tracking-widest">Manual Unban Tool</h3>
+                        <p class="text-gray-600 mb-6 text-sm">Enter the Ban ID or License to revoke access restriction.</p>
+                        <input type="text" id="unban-id" placeholder="BAN-ID-XXXX" class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-yellow-500 mb-4 font-mono">
+                        <button onclick="processUnban()" class="w-full bg-yellow-600 text-black py-4 rounded-2xl font-black tracking-widest hover:bg-yellow-500 transition">AUTHORIZE UNBAN</button>
+                    </div>
+                    <div id="unban-status" class="mt-4 text-xs font-bold uppercase text-center opacity-0 transition-opacity">Request Processed.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="replay-overlay" class="fixed inset-0 z-[400] bg-black/95 items-center justify-center hidden">
+        <div class="text-center">
+            <h2 class="text-blue-500 font-black mb-4 tracking-[0.5em] animate-pulse italic">RECONSTRUCTING REPLAY DATA...</h2>
+            <div class="w-96 h-52 glass border-2 border-blue-600/50 rounded-2xl flex items-center justify-center">
+                <p class="text-gray-700 font-mono text-[10px]">[ DATA ENCRYPTED - SIMULATING 10s LOGS ]</p>
+            </div>
+            <button onclick="this.parentElement.parentElement.classList.add('hidden')" class="mt-8 text-xs text-gray-500 hover:text-white uppercase font-bold tracking-widest border border-white/10 px-10 py-3 rounded-full italic transition">Close Replay View</button>
         </div>
     </div>
 
     <script>
-        // 1. FUNKCE KOŠÍKU
+        // 1. SECTION LOGIC
+        function showSection(id) {
+            document.querySelectorAll('.page-section').forEach(s => {
+                s.classList.remove('active');
+                setTimeout(() => s.style.display = 'none', 600);
+            });
+            setTimeout(() => {
+                const target = document.getElementById(id);
+                target.style.display = 'block';
+                setTimeout(() => target.classList.add('active'), 50);
+            }, 600);
+            window.scrollTo(0, 0);
+        }
+
+        // 2. CART LOGIC
         let cart = [];
-        function toggleCart() {
-            const sidebar = document.getElementById('cart-sidebar');
-            sidebar.classList.toggle('translate-x-full');
+        function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('translate-x-full'); }
+        function addToCart(n, p) {
+            cart.push({n, p});
+            document.getElementById('cart-count').innerText = cart.length;
+            const items = document.getElementById('cart-items');
+            items.innerHTML = cart.map(i => `<div class="flex justify-between font-bold glass p-3 rounded-xl border-l-2 border-blue-600 text-xs"><span>${i.n}</span><span>$${i.p}</span></div>`).join('');
+            document.getElementById('cart-total').innerText = `$${cart.reduce((a,b) => a + b.p, 0)}`;
+            if(document.getElementById('cart-sidebar').classList.contains('translate-x-full')) toggleCart();
         }
 
-        function addToCart(name, price) {
-            cart.push({name, price});
-            updateCart();
-            // Pokud je košík schovaný, vysuneme ho
-            if(document.getElementById('cart-sidebar').classList.contains('translate-x-full')) {
-                toggleCart();
-            }
-        }
-
-        function updateCart() {
-            const itemsDiv = document.getElementById('cart-items');
-            const totalSpan = document.getElementById('cart-total');
-            const countSpan = document.getElementById('cart-count');
-            
-            if (cart.length === 0) {
-                itemsDiv.innerHTML = '<p class="text-gray-600 text-center italic mt-20">Your cart is empty.</p>';
-            } else {
-                itemsDiv.innerHTML = '';
-                let total = 0;
-                cart.forEach((item, index) => {
-                    total += item.price;
-                    itemsDiv.innerHTML += `
-                        <div class="glass p-5 rounded-2xl flex justify-between items-center border border-white/5">
-                            <div>
-                                <p class="font-bold text-sm uppercase">${item.name}</p>
-                                <p class="text-blue-500 font-black">$${item.price}</p>
-                            </div>
-                            <button onclick="removeFromCart(${index})" class="text-red-500 font-bold hover:scale-125 transition">✕</button>
-                        </div>
-                    `;
-                });
-                totalSpan.innerText = `$${total}`;
-            }
-            countSpan.innerText = cart.length;
-        }
-
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            updateCart();
-        }
-
-        // 2. FUNKCE PŘIHLÁŠENÍ (KEY)
-        function verifyKey() {
-            const key = document.getElementById('license-key').value.trim();
-            const btnText = document.getElementById('btn-text');
-            const loader = document.getElementById('loader');
-
-            if (key === "AEGIS-TEST-2024") {
-                btnText.innerText = "VERIFYING...";
-                loader.classList.remove('hidden');
-                
-                // Simulace "hackerského" načítání
+        // 3. AUTH LOGIC
+        function verifyAndLogin() {
+            const key = document.getElementById('license-key').value;
+            if(key === "AEGIS-2024") {
+                document.getElementById('login-text').innerText = "CONNECTING...";
+                document.getElementById('login-loader').classList.remove('hidden');
                 setTimeout(() => {
-                    const main = document.getElementById('main-content');
-                    const dash = document.getElementById('dashboard-view');
-                    
-                    main.style.opacity = '0';
-                    main.style.transform = 'scale(0.9) translateY(-50px)';
-                    
-                    setTimeout(() => {
-                        main.style.display = 'none';
-                        dash.classList.remove('hidden-view');
-                        // Malý trik pro plynulý nástup
-                        setTimeout(() => {
-                            dash.style.opacity = '1';
-                            dash.style.transform = 'scale(1) translateY(0)';
-                        }, 50);
-                    }, 800);
+                    document.getElementById('dashboard').classList.remove('hidden');
+                    document.getElementById('dashboard').classList.add('flex');
                 }, 1500);
-            } else {
-                alert("ACCESS DENIED: INVALID LICENSE KEY.");
-            }
+            } else { alert("ACCESS DENIED."); }
+        }
+
+        // 4. DASHBOARD TOOLS
+        function playReplay() { document.getElementById('replay-overlay').classList.remove('hidden'); document.getElementById('replay-overlay').classList.add('flex'); }
+        function processUnban() {
+            const id = document.getElementById('unban-id').value;
+            if(!id) return;
+            const status = document.getElementById('unban-status');
+            status.innerText = `AUTHORIZING UNBAN FOR ${id}...`;
+            status.style.opacity = '1';
+            setTimeout(() => { status.innerText = "SUCCESS: Ban Revoked."; status.classList.add('text-green-500'); }, 2000);
         }
     </script>
 </body>
