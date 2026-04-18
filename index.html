@@ -3,53 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AEGIS | Leading FiveM Security</title>
+    <title>AEGIS | Global FiveM Security</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;800&display=swap" rel="stylesheet">
     <style>
         * { cursor: none !important; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020203; color: white; overflow-x: hidden; }
         
-        /* ⚪ WHITE NEON CURSOR */
         #cursor { width: 8px; height: 8px; background: #fff; border-radius: 50%; position: fixed; pointer-events: none; z-index: 10000; box-shadow: 0 0 15px #fff; }
         #cursor-f { width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: 0.1s ease-out; }
 
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .hero-title { font-size: clamp(3rem, 12vw, 9rem); font-weight: 800; letter-spacing: -0.06em; line-height: 0.8; }
         
-        .page-section { display: none; opacity: 0; transform: scale(0.98); transition: 0.5s all ease-in-out; }
-        .page-section.active { display: block; opacity: 1; transform: scale(1); }
+        .page-section { display: none; opacity: 0; transform: translateY(20px); transition: 0.6s all cubic-bezier(0.16, 1, 0.3, 1); }
+        .page-section.active { display: block; opacity: 1; transform: translateY(0); }
 
         #cart-sidebar { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-        .grid-bg { background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; }
+        .logo-box { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); box-shadow: 0 0 40px rgba(59, 130, 246, 0.3); }
         
-        .logo-box { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); box-shadow: 0 0 40px rgba(59, 130, 246, 0.4); }
+        .secured-badge { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
     </style>
 </head>
-<body class="grid-bg">
+<body class="bg-[#020203]">
 
     <div id="cursor"></div>
     <div id="cursor-f"></div>
 
-    <div id="cart-sidebar" class="fixed right-0 top-0 h-full w-full md:w-[450px] glass z-[200] translate-x-full p-10 flex flex-col border-l border-white/10 shadow-2xl">
-        <div class="flex justify-between items-center mb-10">
-            <h2 class="text-2xl font-black italic tracking-tighter text-blue-500 uppercase">Payment Terminal</h2>
-            <button onclick="toggleCart()" class="text-gray-500 hover:text-white text-xl">✕</button>
-        </div>
-        <div id="cart-items" class="flex-1 space-y-4 overflow-y-auto">
-            <p class="text-center text-gray-600 italic mt-20">No modules selected.</p>
-        </div>
-        <div class="pt-8 border-t border-white/10 mt-6" id="payment-area" style="display: none;">
-            <div class="flex justify-between text-2xl font-black mb-6"><span>Total:</span><span id="cart-total" class="text-blue-500">€0</span></div>
-            <div class="glass p-6 rounded-2xl border-dashed border border-blue-500/30 mb-6">
-                <p class="text-[10px] font-bold text-gray-500 uppercase mb-2">Instructions:</p>
-                <p class="text-xs mb-4">Pay to: <span class="text-white font-bold">davidstransky3@gmail.com</span></p>
-                <div class="bg-blue-600/10 p-4 rounded-xl">
-                    <p class="text-[9px] font-black text-blue-500 mb-1 uppercase tracking-widest">Required Note:</p>
-                    <p id="payment-note" class="text-xl font-mono font-black text-white italic">Generating...</p>
-                </div>
+    <div id="cart-sidebar" class="fixed right-0 top-0 h-full w-full md:w-[480px] glass z-[200] translate-x-full p-8 flex flex-col border-l border-white/10 shadow-2xl">
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center gap-2">
+                <span class="secured-badge px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">● SECURED GATEWAY</span>
             </div>
-            <button onclick="window.open('https://www.paypal.com/paypalme/davidstransky3', '_blank')" class="w-full bg-white text-black py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-xl">Pay with PayPal</button>
+            <button onclick="toggleCart()" class="text-gray-500 hover:text-white transition">✕</button>
+        </div>
+
+        <div id="cart-content">
+            <h2 class="text-2xl font-black italic mb-6 uppercase italic">Order Summary</h2>
+            <div id="cart-items" class="space-y-4 mb-10">
+                </div>
+            
+            <div class="border-t border-white/10 pt-6">
+                <div class="flex justify-between text-3xl font-black mb-10">
+                    <span>Total</span>
+                    <span id="cart-total" class="text-blue-500">€0</span>
+                </div>
+                <button onclick="startCheckout()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition shadow-lg shadow-blue-900/20">PROCEED TO PAYMENT</button>
+            </div>
+        </div>
+
+        <div id="checkout-interface" class="hidden">
+            <button onclick="backToCart()" class="text-[10px] font-bold text-gray-500 mb-6 uppercase">← Back to summary</button>
+            <h2 class="text-2xl font-black italic mb-2 uppercase">Payment Method</h2>
+            <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-8 text-green-500 italic">Encrypted Connection Established</p>
+            
+            <div class="glass p-8 rounded-[30px] border border-blue-500/20">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="font-black text-xs uppercase">Direct PayPal Transfer</span>
+                    <div class="flex gap-2 opacity-50">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" width="40">
+                    </div>
+                </div>
+                
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">Recipient Address:</p>
+                <div class="bg-black/50 p-4 rounded-xl border border-white/5 mb-6 select-all cursor-copy" onclick="copyText('davidstransky3@gmail.com')">
+                    <p class="text-sm font-mono text-white">davidstransky3@gmail.com</p>
+                </div>
+
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">Required Transaction Note:</p>
+                <div class="bg-blue-600/10 p-5 rounded-xl border border-blue-500/20 mb-8">
+                    <p id="final-ref" class="text-2xl font-mono font-black text-white text-center tracking-tighter">AEGIS-XXXX</p>
+                </div>
+
+                <div class="text-[9px] text-gray-500 space-y-2 uppercase font-bold italic mb-8">
+                    <p>1. Open PayPal and select "Send Payment"</p>
+                    <p>2. Enter the amount & recipient above</p>
+                    <p>3. Paste the unique code into the note</p>
+                    <p>4. License will be issued to your email automatically</p>
+                </div>
+
+                <button onclick="window.open('https://www.paypal.com/paypalme/davidstransky3', '_blank')" class="w-full bg-white text-black py-5 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition shadow-2xl">OPEN PAYPAL TERMINAL</button>
+            </div>
+            
+            <div class="mt-8 flex justify-center gap-4 opacity-20">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" width="30">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" width="30">
+            </div>
         </div>
     </div>
 
@@ -62,51 +101,46 @@
             <span onclick="showSection('home')" class="hover:text-white cursor-pointer transition">Home</span>
             <span onclick="showSection('about')" class="hover:text-white cursor-pointer transition">About</span>
             <span onclick="showSection('pricing')" class="hover:text-white cursor-pointer transition">Store</span>
+            <a href="https://discord.gg/tND5RmUQzG" target="_blank" class="text-blue-600 hover:text-white transition cursor-pointer">Support</a>
         </div>
         <div class="flex gap-6 items-center">
-            <div onclick="toggleCart()" class="cursor-pointer relative text-xl">
-                🛒 <span id="cart-count" class="absolute -top-2 -right-2 bg-blue-600 text-[9px] px-1.5 py-0.5 rounded-full font-bold">0</span>
-            </div>
-            <button onclick="showSection('login')" class="glass px-8 py-3 rounded-xl text-[10px] font-black border border-white/10 hover:border-white transition">LOGIN</button>
+            <div onclick="toggleCart()" class="cursor-pointer relative text-xl">🛒 <span id="cart-count" class="absolute -top-2 -right-2 bg-blue-600 text-[9px] px-1.5 py-0.5 rounded-full font-bold">0</span></div>
+            <button onclick="showSection('login')" class="glass px-8 py-3 rounded-xl text-[10px] font-black border border-white/10 hover:border-white transition uppercase">Login</button>
         </div>
     </nav>
 
     <section id="home" class="page-section active pt-64 text-center px-6">
-        <h1 class="hero-title italic mb-10 uppercase italic">Power. Control.<br><span class="text-blue-600">Protection.</span></h1>
-        <div class="flex justify-center gap-10 mt-10">
-            <div class="text-center"><p class="text-3xl font-black italic">20+</p><p class="text-[8px] text-gray-500 uppercase tracking-widest font-bold">Active Servers</p></div>
-            <div class="text-center border-x border-white/10 px-10"><p class="text-3xl font-black italic">100%</p><p class="text-[8px] text-gray-500 uppercase tracking-widest font-bold">Uptime Rate</p></div>
-            <div class="text-center"><p class="text-3xl font-black italic">24/7</p><p class="text-[8px] text-gray-500 uppercase tracking-widest font-bold">Live Support</p></div>
+        <h1 class="hero-title italic mb-10 uppercase">Security<br><span class="text-blue-600">Reinforced.</span></h1>
+        <div class="flex justify-center gap-10 mt-10 opacity-50">
+            <div class="text-center"><p class="text-3xl font-black italic">20+</p><p class="text-[8px] uppercase tracking-widest font-bold">Servers Protected</p></div>
+            <div class="text-center border-x border-white/10 px-10"><p class="text-3xl font-black italic">100%</p><p class="text-[8px] uppercase tracking-widest font-bold">Encrypted</p></div>
+            <div class="text-center"><p class="text-3xl font-black italic">20+</p><p class="text-[8px] uppercase tracking-widest font-bold">Happy Clients</p></div>
         </div>
-        <button onclick="showSection('pricing')" class="mt-16 bg-white text-black px-16 py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-xl">Start Protection</button>
+        <button onclick="showSection('pricing')" class="mt-16 bg-white text-black px-16 py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-xl">Get Started</button>
     </section>
 
     <section id="about" class="page-section pt-48 px-10 max-w-6xl mx-auto pb-20">
         <div class="grid lg:grid-cols-2 gap-20 items-center">
             <div class="relative">
                 <div class="logo-box w-full aspect-square rounded-[60px] flex items-center justify-center text-9xl font-black italic shadow-2xl">A</div>
-                <div class="absolute -bottom-6 -right-6 glass p-8 rounded-3xl border border-white/10">
-                    <p class="text-4xl font-black text-blue-500 italic">20+</p>
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Happy Clients</p>
-                </div>
             </div>
             <div>
-                <h2 class="text-5xl font-black italic mb-8 uppercase tracking-tighter">We are the <span class="text-blue-600 italic">Aegis Elite.</span></h2>
-                <p class="text-gray-400 leading-relaxed mb-8 font-light italic">
-                    Aegis Anticheat není jen skript. Je to kompletní ekosystém navržený pro nejnáročnější FiveM servery. Naším cílem je poskytnout neprostupnou ochranu bez toho, aniž by vaši hráči pocítili jakýkoliv dopad na výkon.
+                <h2 class="text-5xl font-black italic mb-8 uppercase tracking-tighter">Engineered for <span class="text-blue-600 italic">Superiority.</span></h2>
+                <p class="text-gray-400 leading-relaxed mb-8 font-light">
+                    Aegis is more than a script—it's a high-performance ecosystem designed for the most demanding FiveM servers. We deliver impenetrable security with zero impact on player experience.
                 </p>
                 <div class="space-y-6">
                     <div class="flex gap-5 items-start">
-                        <div class="text-blue-500 font-black text-xl italic">01.</div>
-                        <div><h4 class="font-black text-xs uppercase tracking-widest mb-1">Zero Latency</h4><p class="text-[10px] text-gray-500 font-bold uppercase italic">Náš kód nezabírá téměř žádné místo v paměti a nezvyšuje ping hráčů.</p></div>
+                        <div class="text-blue-500 font-black text-xl italic">🛡️</div>
+                        <div><h4 class="font-black text-xs uppercase tracking-widest mb-1">Zero Latency Optimization</h4><p class="text-[10px] text-gray-500 font-bold uppercase italic">Our engine occupies minimal memory footprint, ensuring your server's ping remains untouched.</p></div>
                     </div>
                     <div class="flex gap-5 items-start">
-                        <div class="text-blue-500 font-black text-xl italic">02.</div>
-                        <div><h4 class="font-black text-xs uppercase tracking-widest mb-1">Global BanSync</h4><p class="text-[10px] text-gray-500 font-bold uppercase italic">Pokud je cheater zabanován na jednom Aegis serveru, u vás se ani nepřipojí.</p></div>
+                        <div class="text-blue-500 font-black text-xl italic">⚡</div>
+                        <div><h4 class="font-black text-xs uppercase tracking-widest mb-1">Active Global Shield</h4><p class="text-[10px] text-gray-500 font-bold uppercase italic">Real-time sync across all Aegis-protected servers. A ban on one is a ban on all.</p></div>
                     </div>
                     <div class="flex gap-5 items-start">
-                        <div class="text-blue-500 font-black text-xl italic">03.</div>
-                        <div><h4 class="font-black text-xs uppercase tracking-widest mb-1">Advanced Detection</h4><p class="text-[10px] text-gray-500 font-bold uppercase italic">Hlídáme více než 500 zakázaných eventů a 200+ mod menu v reálném čase.</p></div>
+                        <div class="text-blue-500 font-black text-xl italic">🛰️</div>
+                        <div><h4 class="font-black text-xs uppercase tracking-widest mb-1">Stealth Execution</h4><p class="text-[10px] text-gray-500 font-bold uppercase italic">Advanced detection of 500+ triggers and 200+ mod menus without triggering false positives.</p></div>
                     </div>
                 </div>
             </div>
@@ -116,16 +150,16 @@
     <section id="pricing" class="page-section pt-48 px-10 max-w-7xl mx-auto pb-20">
         <div class="grid md:grid-cols-3 gap-10">
             <div class="glass p-12 rounded-[40px] border border-white/5 hover:border-blue-500/50 transition flex flex-col justify-between">
-                <div><h3 class="text-gray-600 font-bold uppercase tracking-widest text-[10px] mb-4">Monthly Access</h3><div class="text-6xl font-black mb-10">€5</div></div>
+                <div><h3 class="text-gray-600 font-bold uppercase tracking-widest text-[10px] mb-4 italic">Standard Module</h3><div class="text-6xl font-black mb-10">€5</div></div>
                 <button onclick="addToCart('Aegis Monthly', 5)" class="w-full py-5 rounded-2xl bg-white/5 font-black hover:bg-blue-600 transition uppercase text-[10px] tracking-widest">Add to Cart</button>
             </div>
             <div class="glass p-12 rounded-[50px] border-2 border-white scale-110 shadow-2xl relative flex flex-col justify-between">
                 <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-black px-4 py-1 rounded-full text-[8px] font-black uppercase italic">Permanent</div>
-                <div><h3 class="text-blue-500 font-bold uppercase tracking-widest text-[10px] mb-4">Lifetime Elite</h3><div class="text-6xl font-black mb-10">€20</div></div>
+                <div><h3 class="text-blue-500 font-bold uppercase tracking-widest text-[10px] mb-4">Elite Lifetime</h3><div class="text-6xl font-black mb-10">€20</div></div>
                 <button onclick="addToCart('Aegis Lifetime', 20)" class="w-full py-5 rounded-2xl bg-white text-black font-black hover:bg-blue-600 hover:text-white transition uppercase text-[10px] tracking-widest">Add to Cart</button>
             </div>
             <div class="glass p-12 rounded-[40px] border border-white/5 hover:border-blue-500/50 transition flex flex-col justify-between">
-                <div><h3 class="text-gray-600 font-bold uppercase tracking-widest text-[10px] mb-4">Extended Module</h3><div class="text-6xl font-black mb-10">€10</div></div>
+                <div><h3 class="text-gray-600 font-bold uppercase tracking-widest text-[10px] mb-4 italic">Extended Module</h3><div class="text-6xl font-black mb-10">€10</div></div>
                 <button onclick="addToCart('Aegis Quarterly', 10)" class="w-full py-5 rounded-2xl bg-white/5 font-black hover:bg-blue-600 transition uppercase text-[10px] tracking-widest">Add to Cart</button>
             </div>
         </div>
@@ -133,24 +167,24 @@
 
     <section id="login" class="page-section pt-56 px-6">
         <div class="max-w-md mx-auto glass p-16 rounded-[50px] text-center border border-white/10 shadow-2xl">
-            <h2 class="text-3xl font-black mb-10 italic uppercase tracking-tighter">Command Login</h2>
-            <input type="text" id="license-key" placeholder="AEGIS-XXXX-XXXX" class="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-5 outline-none focus:border-blue-500 text-center font-mono text-xl tracking-widest mb-6">
-            <button onclick="verifyLogin()" class="w-full bg-white text-black py-5 rounded-2xl font-black tracking-widest hover:bg-blue-600 hover:text-white transition-all uppercase">Initialize</button>
-            <p class="mt-4 text-[9px] text-gray-700 font-bold uppercase tracking-widest italic">Demo: AEGIS-2024</p>
+            <h2 class="text-3xl font-black mb-10 italic uppercase tracking-tighter italic">Auth Required</h2>
+            <input type="text" id="license-key" placeholder="AEGIS-XXXX-XXXX" class="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-5 outline-none focus:border-blue-500 text-center font-mono text-xl tracking-widest mb-6 uppercase">
+            <button onclick="verifyLogin()" class="w-full bg-white text-black py-5 rounded-2xl font-black tracking-widest hover:bg-blue-600 hover:text-white transition-all uppercase">Verify License</button>
+            <p class="mt-4 text-[9px] text-gray-700 font-bold uppercase tracking-widest italic">Demo Key: <span class="text-white">AEGIS-2024</span></p>
         </div>
     </section>
 
     <div id="dashboard" class="fixed inset-0 z-[300] bg-[#020203] hidden p-12 overflow-y-auto">
         <div class="max-w-6xl mx-auto">
             <div class="flex justify-between items-center mb-20 border-b border-white/5 pb-10">
-                <h1 class="text-4xl font-black italic tracking-tighter text-blue-500 uppercase">Aegis_Panel</h1>
+                <h1 class="text-4xl font-black italic tracking-tighter text-blue-500 uppercase italic">Aegis Control Panel</h1>
                 <button onclick="location.reload()" class="bg-red-600 text-white px-8 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest">Logout</button>
             </div>
             <div class="grid md:grid-cols-2 gap-10">
                 <div class="glass p-12 rounded-[50px] border border-blue-500/20 shadow-lg">
                     <h3 class="text-2xl font-black mb-6 uppercase italic">Software Package</h3>
-                    <p class="text-gray-500 text-sm mb-10 italic">Váš systém je připraven ke stažení. Balíček obsahuje launcher a serverové resource.</p>
-                    <a href="Aegis_Anticheat.zip" download class="inline-block bg-white text-black px-12 py-5 rounded-2xl font-black text-[10px] hover:bg-blue-600 hover:text-white transition-all shadow-xl uppercase tracking-widest">Download .ZIP</a>
+                    <p class="text-gray-500 text-sm mb-10 italic leading-relaxed">System ready for deployment. Package includes encrypted launcher and FiveM resource files.</p>
+                    <a href="Aegis_Anticheat.zip" download class="inline-block bg-white text-black px-12 py-5 rounded-2xl font-black text-[10px] hover:bg-blue-600 hover:text-white transition-all shadow-xl uppercase tracking-widest">Download Bundle (.ZIP)</a>
                 </div>
             </div>
         </div>
@@ -173,23 +207,38 @@
             }, 500);
         }
 
-        let cart = [];
-        function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('translate-x-full'); }
+        function toggleCart() { 
+            document.getElementById('cart-sidebar').classList.toggle('translate-x-full'); 
+            backToCart(); // Reset to summary when opening/closing
+        }
 
         function addToCart(name, price) {
-            cart = [{name, price}];
-            document.getElementById('cart-count').innerText = cart.length;
+            document.getElementById('cart-count').innerText = "1";
             document.getElementById('cart-total').innerText = `€${price}`;
-            document.getElementById('payment-note').innerText = "AEGIS-" + Math.random().toString(36).substring(2, 9).toUpperCase();
-            document.getElementById('cart-items').innerHTML = `<div class="glass p-6 rounded-2xl flex justify-between items-center border border-blue-500/20"><div><p class="font-black text-xs uppercase text-blue-500">${name}</p><p class="text-white font-bold">€${price}</p></div></div>`;
-            document.getElementById('payment-area').style.display = 'block';
+            document.getElementById('cart-items').innerHTML = `<div class="glass p-6 rounded-2xl border border-blue-500/20"><div><p class="font-black text-[10px] uppercase text-blue-500 mb-1">${name}</p><p class="text-2xl font-black text-white italic">€${price}</p></div></div>`;
+            document.getElementById('final-ref').innerText = "AEGIS-" + Math.random().toString(36).substring(2, 9).toUpperCase();
             if(document.getElementById('cart-sidebar').classList.contains('translate-x-full')) toggleCart();
         }
 
+        function startCheckout() {
+            document.getElementById('cart-content').classList.add('hidden');
+            document.getElementById('checkout-interface').classList.remove('hidden');
+        }
+
+        function backToCart() {
+            document.getElementById('cart-content').classList.remove('hidden');
+            document.getElementById('checkout-interface').classList.add('hidden');
+        }
+
         function verifyLogin() {
-            if(document.getElementById('license-key').value === 'AEGIS-2024') {
+            if(document.getElementById('license-key').value.toUpperCase() === 'AEGIS-2024') {
                 document.getElementById('dashboard').classList.remove('hidden');
-            } else { alert('SECURITY_ERROR: INVALID_KEY'); }
+            } else { alert('ACCESS_DENIED: UNAUTHORIZED_LICENSE'); }
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text);
+            alert('Email copied to clipboard!');
         }
     </script>
 </body>
